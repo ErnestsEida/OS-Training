@@ -1,0 +1,13 @@
+1) Bootloader - boot sector is 512 bytes long and is located in a standard location ( place that never changes ).
+in this situation the BIOS checks that bytes 511 and 512 of the boot sector are bytes 0xAA55
+
+2) AX register ( which consists of 16 bits or 2 bytes), has AL and AH where you can access its individual bytes
+by writing value 0x0e to AH, the video interrupt (int 0x10) understands that we want to write the contents of AL in tty mode
+
+3) https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf at page 18 contains memory structure. Only way to access a defined byte in boot sector
+you have to offset memory by 0x7c00 ( which is the address where boot sector starts in )
+[org 0x7c00] is used at the start of the file to offset memory to boot sector, so you can use previously defined bytes with [var_name]
+
+4) BP (base pointer) is a pointer that points to bottom of the stack. SP (stack pointer) is a pointer that points to the top of the stack. Stack always grows downwards so SP gets decremented with stack growth!
+
+5) We can use jmp conditions together with cmp to realise almost any necessary logical operation. We can realize functions by doing the "call -> ret" so that program returns to the instruction point where it was called, instead of just continuing on forward after jumping to the label called.
