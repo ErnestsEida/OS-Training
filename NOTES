@@ -1,13 +1,33 @@
-1) Bootloader - boot sector is 512 bytes long and is located in a standard location ( place that never changes ).
+1) Bootloader: boot sector is 512 bytes long and is located in a standard location ( place that never changes ).
 in this situation the BIOS checks that bytes 511 and 512 of the boot sector are bytes 0xAA55
 
-2) AX register ( which consists of 16 bits or 2 bytes), has AL and AH where you can access its individual bytes
+2) Interupts and writing: AX register ( which consists of 16 bits or 2 bytes), has AL and AH where you can access its individual bytes
 by writing value 0x0e to AH, the video interrupt (int 0x10) understands that we want to write the contents of AL in tty mode
 
-3) https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf at page 18 contains memory structure. Only way to access a defined byte in boot sector
+3) Memory: https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf at page 18 contains memory structure.
+Only way to access a defined byte in boot sector
 you have to offset memory by 0x7c00 ( which is the address where boot sector starts in )
 [org 0x7c00] is used at the start of the file to offset memory to boot sector, so you can use previously defined bytes with [var_name]
 
-4) BP (base pointer) is a pointer that points to bottom of the stack. SP (stack pointer) is a pointer that points to the top of the stack. Stack always grows downwards so SP gets decremented with stack growth!
+4) Stack: BP (base pointer) is a pointer that points to bottom of the stack. SP (stack pointer) is a pointer that points to the top of the stack. Stack always grows downwards so SP gets decremented with stack growth!
 
-5) We can use jmp conditions together with cmp to realise almost any necessary logical operation. We can realize functions by doing the "call -> ret" so that program returns to the instruction point where it was called, instead of just continuing on forward after jumping to the label called.
+5) Conditions and routines: We can use jmp conditions together with cmp to realise almost any necessary logical operation. We can realize functions by doing the "call -> ret" so that program returns to the instruction point where it was called, instead of just continuing on forward after jumping to the label called.
+
+6) Segmentation: On lesson 3. there was an occurance of segmentation by using [org ...], but that sets an universal offset to all data we access.
+we can use specific offset values for our conviniece, by using speical registers (segment registers): CS = Code, DS - Data, SS - Stack, ES - Extra.
+CPU calculates the offset by multiplying the value in register by 16 or just shifts your hex address by one to the left.
+for 0xAF2 -->  (16 * 0xAF2 = 0xAF20) --> + value provided in operation (mov ax, [0x20]) ) --> 0xAF20 + 0x20 = 0xAF40
+Note that these you can't insert offset address directly in these registers. They only allow reg <-> reg exchange, so you have to store the adress in general purpouse first
+
+7) Reading from disk: Since OS won't fit in the finite amount of 512 bytes that boot sector has, we need to read necrssary data from hard drive.
+First of all.. Hard drive has 2 variables that determine where to read/write: Sector, Cylinder, Head.
+Reading is done by setting: 
+AH = 0x02,
+AL = {number_of_sectors_to_read},
+CL = {first_sector_to_read}( pay attention that 0x01 is the boot sector, so 0x02 would be the first one free to use ),
+CH = {cylinder_to_use} (0x0 .. 0x3FF)
+DL = {drive number} (gets automatically from BIOS, but --> 0 = floppy, 1 = floppy2, 0x80 = hdd, 0x81 = hdd2)
+DH = {head_number} (0x0 .. 0xF)
+when all of the values are set, you can call INT 0x13 which is a BIOS routine responsible for this action. You can see if this resulted in error if carry flag is set!
+
+8) 32-bit protected mode ( or maybe go straight to 64bit??) anyways - page 35 (https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) for reference
