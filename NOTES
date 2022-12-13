@@ -30,4 +30,8 @@ DL = {drive number} (gets automatically from BIOS, but --> 0 = floppy, 1 = flopp
 DH = {head_number} (0x0 .. 0xF)
 when all of the values are set, you can call INT 0x13 which is a BIOS routine responsible for this action. You can see if this resulted in error if carry flag is set!
 
-8) 32-bit protected mode ( or maybe go straight to 64bit??) anyways - page 35 (https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf) for reference
+8) 32-bit mode: When switching to 32-bit protected mode, you wont be able to access BIOS routines that were there in 16bit mode, from this we can
+conclude that we have to write our own drivers for things like (keyboard, mouse, video , ...).
+At first we have to output anything on display. Display has 2 modes - Graphics, Text. And it represents a certain fragment of memory on the screen.
+In text mode we dont have to define how the ASCII letter is displayed, all of this is hardcoded. All we need to pass are 2 bytes ( ASCII, Attributes (color, bg_color))
+in 32bit mode, the start of the video memory is usually 0xb8000. No interruptions are called because we are editing memory directly!
